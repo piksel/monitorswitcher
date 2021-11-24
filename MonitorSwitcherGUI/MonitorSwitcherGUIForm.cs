@@ -12,33 +12,12 @@ using System.IO;
 using System.Xml;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using static MonitorSwitcherGUI.Util;
 
 namespace MonitorSwitcherGUI
 {
     public class MonitorSwitcherGUI : Form
     {
-        [STAThread]
-        public static void Main(string[] args)
-        {
-            // Parse command line
-            string customSettingsDirectory = "";
-            foreach (string iArg in args)
-            {
-                string[] argElements = iArg.Split(new char[] { ':' }, 2);
-
-                switch (argElements[0].ToLower())
-                {
-                    case "-settings":
-                        customSettingsDirectory = argElements[1];
-                        break;
-                }
-            }
-
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MonitorSwitcherGUI(customSettingsDirectory));
-        }
-
         private NotifyIcon trayIcon;
         private ContextMenuStrip trayMenu;
         private String settingsDirectory;
@@ -89,7 +68,7 @@ namespace MonitorSwitcherGUI
             trayMenu.ImageList.Images.Add(Image.FromStream(myStream));
 
             // finally build tray menu
-            BuildTrayMenu();            
+            BuildTrayMenu();
 
             // Create tray icon
             trayIcon = new NotifyIcon();
@@ -135,7 +114,7 @@ namespace MonitorSwitcherGUI
             {
                 foreach (Hotkey hotkey in removeList)
                 {
-                    Hotkeys.Remove(hotkey);                    
+                    Hotkeys.Remove(hotkey);
                 }
                 removeList.Clear();
                 SaveSettings();
@@ -146,26 +125,27 @@ namespace MonitorSwitcherGUI
             {
                 hotkey.UnregisterHotkey();
                 hotkey.RegisterHotkey(this);
-            }           
+            }
         }
 
         public void KeyHook_KeyUp(object sender, HandledEventArgs e)
         {
-            HotkeyCtrl hotkeyCtrl = (sender as HotkeyCtrl);   
+            HotkeyCtrl hotkeyCtrl = (sender as HotkeyCtrl);
             Hotkey hotkey = FindHotkey(hotkeyCtrl);
             LoadProfile(hotkey.profileName);
             e.Handled = true;
         }
 
         public void KeyHook_KeyDown(object sender, HandledEventArgs e)
-        {            
+        {
             e.Handled = true;
-        } 
+        }
 
         public void LoadSettings()
         {
             // Unregister and clear all existing hotkeys
-            foreach (Hotkey hotkey in Hotkeys) {
+            foreach (Hotkey hotkey in Hotkeys)
+            {
                 hotkey.UnregisterHotkey();
             }
             Hotkeys.Clear();
@@ -174,7 +154,7 @@ namespace MonitorSwitcherGUI
             if (!File.Exists(SettingsFileFromName("Hotkeys")))
                 return;
 
-            System.Xml.Serialization.XmlSerializer readerHotkey = new System.Xml.Serialization.XmlSerializer(typeof(Hotkey));           
+            System.Xml.Serialization.XmlSerializer readerHotkey = new System.Xml.Serialization.XmlSerializer(typeof(Hotkey));
 
             try
             {
@@ -281,7 +261,7 @@ namespace MonitorSwitcherGUI
             saveMenu.ImageIndex = 4;
             saveMenu.DropDown = new ToolStripDropDownMenu();
             saveMenu.DropDown.ImageList = trayMenu.ImageList;
-            trayMenu.Items.Add(saveMenu);            
+            trayMenu.Items.Add(saveMenu);
 
             newMenuItem = saveMenu.DropDownItems.Add("New Profile...");
             newMenuItem.Click += OnMenuSaveAs;
@@ -325,7 +305,7 @@ namespace MonitorSwitcherGUI
                 newMenuItem = hotkeyMenu.DropDownItems.Add(itemCaption + " " + hotkeyString);
                 newMenuItem.Tag = itemCaption;
                 newMenuItem.Click += OnHotkeySet;
-                newMenuItem.ImageIndex = 3;                
+                newMenuItem.ImageIndex = 3;
             }
 
             trayMenu.Items.Add("-");
@@ -337,7 +317,7 @@ namespace MonitorSwitcherGUI
             newMenuItem = trayMenu.Items.Add("About");
             newMenuItem.Click += OnMenuAbout;
             newMenuItem.ImageIndex = 6;
-            
+
             newMenuItem = trayMenu.Items.Add("Donate");
             newMenuItem.Click += OnMenuDonate;
             newMenuItem.ImageIndex = 8;
@@ -370,7 +350,7 @@ namespace MonitorSwitcherGUI
         }
 
         public void OnMenuAbout(object sender, EventArgs e)
-        { 
+        {
             MessageBox.Show("Monitor Profile Switcher by Martin Krämer \n(MartinKraemer84@gmail.com)\nVersion 0.8.0.0\nCopyright 2013-2017 \n\nhttps://sourceforge.net/projects/monitorswitcher/", "About Monitor Profile Switcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -487,7 +467,7 @@ namespace MonitorSwitcherGUI
         {
             Visible = false; // Hide form window.
             ShowInTaskbar = false; // Remove from taskbar.
-            
+
             base.OnLoad(e);
         }
 
@@ -505,230 +485,6 @@ namespace MonitorSwitcherGUI
             }
 
             base.Dispose(isDisposing);
-        }
-
-        public static DialogResult HotkeySetting(string title, string promptText, ref Hotkey value)
-        {
-            Form form = new Form();
-            Label label = new Label();
-            TextBox textBox = new TextBox();
-            Button buttonOk = new Button();
-            Button buttonCancel = new Button();
-            Button buttonClear = new Button();
-
-            form.Text = title;
-            label.Text = "Press hotkey combination or click 'Clear Hotkey' to remove the current hotkey";
-            if (value != null)
-                textBox.Text = value.ToString();
-            textBox.Tag = value;
-
-            buttonClear.Text = "Clear Hotkey";
-            buttonOk.Text = "OK";
-            buttonCancel.Text = "Cancel";
-            buttonOk.DialogResult = DialogResult.OK;
-            buttonCancel.DialogResult = DialogResult.Cancel;
-
-            label.SetBounds(9, 10, 372, 13);
-            textBox.SetBounds(12, 36, 372 - 75 -8, 20);
-            buttonOk.SetBounds(228, 72, 75, 23);
-            buttonCancel.SetBounds(309, 72, 75, 23);
-            buttonClear.SetBounds(309, 36 - 1, 75, 23);
-
-            buttonClear.Tag = textBox;
-            buttonClear.Click += new EventHandler(buttonClear_Click);
-            textBox.KeyDown += new KeyEventHandler(textBox_KeyDown);
-            textBox.KeyUp += new KeyEventHandler(textBox_KeyUp);
-
-            label.AutoSize = true;
-            textBox.Anchor = textBox.Anchor | AnchorStyles.Right;
-            buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonClear.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-
-            form.ClientSize = new Size(396, 107);
-            form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel, buttonClear });
-            form.ClientSize = new Size(Math.Max(300, label.Right + 10), form.ClientSize.Height);
-            form.FormBorderStyle = FormBorderStyle.FixedDialog;
-            form.StartPosition = FormStartPosition.CenterScreen;
-            form.MinimizeBox = false;
-            form.MaximizeBox = false;
-            form.AcceptButton = buttonOk;
-            form.CancelButton = buttonCancel;
-
-            DialogResult dialogResult = form.ShowDialog();
-            value = (textBox.Tag as Hotkey);
-            return dialogResult;
-        }
-
-        static void textBox_KeyUp(object sender, KeyEventArgs e)
-        {
-            TextBox textBox = (sender as TextBox);
-
-            if (textBox.Tag != null)
-            {
-                Hotkey hotkey = (textBox.Tag as Hotkey);
-                // check if any additional key was pressed, if not don't acceppt hotkey
-                if ((hotkey.Key < Keys.D0) || ((!hotkey.Alt) && (!hotkey.Ctrl) && (!hotkey.Shift)))
-                    textBox.Text = "";
-            }                
-        }
-        
-        static void textBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            TextBox textBox = (sender as TextBox);
-            Hotkey hotkey = (textBox.Tag as Hotkey);
-            if (hotkey == null)
-                hotkey = new Hotkey();
-            hotkey.AssignFromKeyEventArgs(e);            
-
-            e.Handled = true;
-            e.SuppressKeyPress = true; // don't add user input to text box, just use custom display
-
-            textBox.Text = hotkey.ToString();
-            textBox.Tag = hotkey; // store the current key combination in the textbox tag (for later use)
-         }
-
-        static void buttonClear_Click(object sender, EventArgs e)
-        {
-            TextBox textBox = (sender as Button).Tag as TextBox;
-
-            if (textBox.Tag != null)
-            {
-                Hotkey hotkey = (textBox.Tag as Hotkey);
-                hotkey.RemoveKey = true;
-            }
-            textBox.Clear();
-        }
-
-        public static DialogResult InputBox(string title, string promptText, ref string value)
-        {
-            Form form = new Form();
-            Label label = new Label();
-            TextBox textBox = new TextBox();
-            Button buttonOk = new Button();
-            Button buttonCancel = new Button();
-
-            form.Text = title;
-            label.Text = promptText;
-            textBox.Text = value;
-
-            buttonOk.Text = "OK";
-            buttonCancel.Text = "Cancel";
-            buttonOk.DialogResult = DialogResult.OK;
-            buttonCancel.DialogResult = DialogResult.Cancel;            
-
-            label.SetBounds(9, 10, 372, 13);
-            textBox.SetBounds(12, 36, 372, 20);
-            buttonOk.SetBounds(228, 72, 75, 23);
-            buttonCancel.SetBounds(309, 72, 75, 23);
-
-            label.AutoSize = true;
-            textBox.Anchor = textBox.Anchor | AnchorStyles.Right;
-            buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-
-            form.ClientSize = new Size(396, 107);
-            form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel });
-            form.ClientSize = new Size(Math.Max(300, label.Right + 10), form.ClientSize.Height);
-            form.FormBorderStyle = FormBorderStyle.FixedDialog;
-            form.StartPosition = FormStartPosition.CenterScreen;
-            form.MinimizeBox = false;
-            form.MaximizeBox = false;
-            form.AcceptButton = buttonOk;
-            form.CancelButton = buttonCancel;
-
-            DialogResult dialogResult = form.ShowDialog();
-            value = textBox.Text;
-            return dialogResult;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public class Hotkey
-    {
-        public Boolean Ctrl;
-        public Boolean Alt;
-        public Boolean Shift;
-        public Boolean RemoveKey; 
-        public Keys Key;
-        public String profileName;
-
-        public HotkeyCtrl hotkeyCtrl;
-
-        public Hotkey()
-        {
-            hotkeyCtrl = new HotkeyCtrl();
-            RemoveKey = false;
-        }
-
-        public void RegisterHotkey(MonitorSwitcherGUI parent)
-        {
-            hotkeyCtrl.Alt = Alt;
-            hotkeyCtrl.Shift = Shift;
-            hotkeyCtrl.Control = Ctrl;
-            hotkeyCtrl.KeyCode = Key;
-            hotkeyCtrl.Pressed += new HandledEventHandler(parent.KeyHook_KeyUp);
-
-            if (!hotkeyCtrl.GetCanRegister(parent))
-            {
-                // something went wrong, ignore for nw
-            }
-            else
-            {
-                hotkeyCtrl.Register(parent);
-            }
-        }
-
-        public void UnregisterHotkey()
-        {
-            if (hotkeyCtrl.Registered)
-            {
-                hotkeyCtrl.Unregister();
-            }
-        }
-
-        public void AssignFromKeyEventArgs(KeyEventArgs keyEvents)
-        {
-            Ctrl = keyEvents.Control;
-            Alt = keyEvents.Alt;
-            Shift = keyEvents.Shift;
-            Key = keyEvents.KeyCode;
-        }
-
-        public override string ToString()
-        {            
-            List<string> keys = new List<string>();
-
-            if (Ctrl == true)
-            {
-                keys.Add("CTRL");
-            }
-
-            if (Alt == true)
-            {
-                keys.Add("ALT");
-            }
-
-            if (Shift == true)
-            {
-                keys.Add("SHIFT");
-            }
-
-            switch (Key)
-            {
-                case Keys.ControlKey:
-                case Keys.Alt:
-                case Keys.ShiftKey:
-                case Keys.Menu:
-                    break;
-                default:
-                    keys.Add(Key.ToString()
-                        .Replace("Oem", string.Empty)
-                        );
-                    break;
-            }
-
-            return string.Join(" + ", keys);
         }
     }
 }

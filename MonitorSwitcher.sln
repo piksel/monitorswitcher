@@ -5,9 +5,9 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorSwitcherGUI", "MonitorSwitcherGUI\MonitorSwitcherGUI.csproj", "{85C2ED16-CB28-4374-B747-A4984EF96CE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorSwitcher", "..\MonitorSwitcher\MonitorSwitcher\MonitorSwitcher.csproj", "{531C5395-5EEC-4629-A285-B40105AAF593}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorSwitcher", "MonitorSwitcher\MonitorSwitcher.csproj", "{531C5395-5EEC-4629-A285-B40105AAF593}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorSwitcherGUIConfig", "..\MonitorSwitcherGUIConfig\MonitorSwitcherGUIConfig.csproj", "{E3BEA495-71D7-4625-B6F5-E28156E326E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorSwitcherGUIConfig", "MonitorSwitcherGUIConfig\MonitorSwitcherGUIConfig.csproj", "{E3BEA495-71D7-4625-B6F5-E28156E326E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
